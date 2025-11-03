@@ -8,8 +8,6 @@ import jakarta.websocket.ContainerProvider
 import jakarta.websocket.OnMessage
 import jakarta.websocket.Session
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.boot.test.web.server.LocalServerPort
@@ -36,7 +34,6 @@ class ElizaServerTest {
         assertEquals("The doctor is in.", list[0])
     }
 
-    
     @Test
     fun onChat() {
         logger.info { "Test thread" }
@@ -55,8 +52,7 @@ class ElizaServerTest {
         // Because we cant say if we receive 4 or 5 messages, its a random value so we cant choose a specific number
         // 4. COMPLETE assertEquals(XXX, list[XXX])
         assertEquals("You don't seem very certain.", list[3])
-        logger.info { "He recibido ${list.size}"}
-
+        logger.info { "He recibido ${list.size}" }
     }
 }
 
@@ -90,10 +86,10 @@ class ComplexClient(
         // 5. COMPLETE if (expression) {
         // 6. COMPLETE   sentence
         // }
-        if(message == "---"){
+        if (message == "---") {
             session.basicRemote.sendTextSafe("maybe")
         }
-        logger.info { "He recibido en el cliente ${list.size}"}
+        logger.info { "He recibido en el cliente ${list.size}" }
     }
 }
 

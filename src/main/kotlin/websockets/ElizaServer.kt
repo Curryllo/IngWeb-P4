@@ -20,6 +20,8 @@ import org.springframework.stereotype.Component
 import org.springframework.web.socket.server.standard.ServerEndpointExporter
 import java.util.Locale
 import java.util.Scanner
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
 
 @SpringBootApplication
 class Application
@@ -50,13 +52,70 @@ fun RemoteEndpoint.Basic.sendTextSafe(message: String) {
     }
 }
 
+@ServerEndpoint("/stats")
+@Component
+class StatsEndpoint {
+    companion object {
+        private val sessions = ConcurrentHashMap.newKeySet<Session>()
+        private val connectedUsers = AtomicInteger(0)
+        private val messagesSent = AtomicInteger(0)
+
+        fun broadcastStats() {
+            val stats = """{
+                "connectedUsers": ${connectedUsers.get()},
+                "messagesSent": ${messagesSent.get()}
+            }"""
+            for (s in sessions) {
+                if (s.isOpen) {
+                    synchronized(s) {
+                        try {
+                            s.basicRemote.sendText(stats)
+                        } catch (e: Exception) {
+                            logger.error(e) { "Error sending stats to session ${s.id}" }
+                        }
+                    }
+                }
+            }
+        }
+
+        fun incrementMessages() {
+            messagesSent.incrementAndGet()
+            broadcastStats()
+        }
+
+        fun incrementSessions() {
+            connectedUsers.incrementAndGet()
+            broadcastStats()
+        }
+
+        fun decrementSessions() {
+            connectedUsers.decrementAndGet()
+            broadcastStats()
+        }
+    }
+
+    @OnOpen
+    fun onOpen(session: Session) {
+        sessions.add(session)
+        broadcastStats()
+    }
+
+    @OnError
+    fun onError(
+        session: Session,
+        errorReason: Throwable,
+    ) {
+        logger.error(errorReason) { "Session ${session.id} closed because of ${errorReason.javaClass.name}" }
+    }
+}
+
 @ServerEndpoint("/eliza")
 @Component
 class ElizaEndpoint {
     private val eliza = Eliza()
 
     companion object {
-        private val sessions = mutableSetOf<Session>()
+        private val sessions = ConcurrentHashMap.newKeySet<Session>()
     }
 
     /**
@@ -73,6 +132,7 @@ class ElizaEndpoint {
             sendTextSafe("---")
         }
         sessions.add(session)
+        StatsEndpoint.incrementSessions()
     }
 
     /**
@@ -87,6 +147,7 @@ class ElizaEndpoint {
     ) {
         logger.info { "Session ${session.id} closed because of $closeReason" }
         sessions.remove(session)
+        StatsEndpoint.decrementSessions()
     }
 
     /**
@@ -109,6 +170,7 @@ class ElizaEndpoint {
                         val line = Scanner(message.lowercase(Locale.getDefault()))
                         with(s.basicRemote) {
                             val response = eliza.respond(line)
+                            StatsEndpoint.incrementMessages()
                             sendTextSafe(response)
                             logger.info { "Server sent \"${response}\" to Session ${s.id}" }
                             sendTextSafe("---")

@@ -2,12 +2,14 @@
 
 ## Description of Changes
 [Detailed description of all changes made]
-- Change ElizaServerTest.kt
-- Change ElizaServer.kt
+- Changed ElizaServerTest.kt
+- Changed ElizaServer.kt
+- Created index.html
 
 ## Technical Decisions
 [Explanation of technical choices made]
 - Decided to implement Session Management and Broadcast and Real-time Analystics Dashboard
+- Dashboard implemented wiht html and js
 
 ## Learning Outcomes
 [What you learned from this assignment]
@@ -32,6 +34,7 @@
 - [Describe work done without AI assistance]
 - Searched for documentation to add STOMP to Spring Boot
 - Searched for documentation of methods in WebSockets
+- File index.html
 - [Your understanding and learning process]
 - Tried to implement STOMP but I wasnt understanding it too well to implement it in this code
 - Took a time to fully understand methods like @OnOpen, @OnClose, @OnMessage but thanks to the implementation of the new endoint, /stats,

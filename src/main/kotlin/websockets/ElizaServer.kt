@@ -55,6 +55,10 @@ fun RemoteEndpoint.Basic.sendTextSafe(message: String) {
 class ElizaEndpoint {
     private val eliza = Eliza()
 
+    companion object {
+        private val sessions = mutableSetOf<Session>()
+    }
+
     /**
      * Successful connection
      *
@@ -68,6 +72,7 @@ class ElizaEndpoint {
             sendTextSafe("What's on your mind?")
             sendTextSafe("---")
         }
+        sessions.add(session)
     }
 
     /**
@@ -81,6 +86,7 @@ class ElizaEndpoint {
         closeReason: CloseReason,
     ) {
         logger.info { "Session ${session.id} closed because of $closeReason" }
+        sessions.remove(session)
     }
 
     /**
@@ -96,12 +102,18 @@ class ElizaEndpoint {
         logger.info { "Server Message ... Session ${session.id}" }
         val currentLine = Scanner(message.lowercase(Locale.getDefault()))
         if (currentLine.findInLine("bye") == null) {
-            logger.info { "Server received \"${message}\"" }
+            logger.info { "Server received \"${message}\" from Session ${session.id}" }
             runCatching {
-                if (session.isOpen) {
-                    with(session.basicRemote) {
-                        sendTextSafe(eliza.respond(currentLine))
-                        sendTextSafe("---")
+                for (s in sessions) {
+                    if (session.isOpen) {
+                        val line = Scanner(message.lowercase(Locale.getDefault()))
+                        with(s.basicRemote) {
+                            val response = eliza.respond(line)
+                            sendTextSafe(response)
+                            logger.info { "Server sent \"${response}\" to Session ${s.id}" }
+                            sendTextSafe("---")
+                            logger.info { "Server sent --- to Session ${s.id}" }
+                        }
                     }
                 }
             }.onFailure {

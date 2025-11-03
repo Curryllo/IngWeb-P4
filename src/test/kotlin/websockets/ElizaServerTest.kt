@@ -36,7 +36,7 @@ class ElizaServerTest {
         assertEquals("The doctor is in.", list[0])
     }
 
-    @Disabled // Remove this line when you implement onChat
+    
     @Test
     fun onChat() {
         logger.info { "Test thread" }
@@ -48,9 +48,15 @@ class ElizaServerTest {
         latch.await()
         val size = list.size
         // 1. EXPLAIN WHY size = list.size IS NECESSARY
+        // It is neccesary because you need to know if at least you receive 4 messages and at most 5 messages
         // 2. REPLACE BY assertXXX expression that checks an interval; assertEquals must not be used;
+        assert(size == 4 || size == 5)
         // 3. EXPLAIN WHY assertEquals CANNOT BE USED AND WHY WE SHOULD CHECK THE INTERVAL
+        // Because we cant say if we receive 4 or 5 messages, its a random value so we cant choose a specific number
         // 4. COMPLETE assertEquals(XXX, list[XXX])
+        assertEquals("You don't seem very certain.", list[3])
+        logger.info { "He recibido ${list.size}"}
+
     }
 }
 
@@ -84,6 +90,10 @@ class ComplexClient(
         // 5. COMPLETE if (expression) {
         // 6. COMPLETE   sentence
         // }
+        if(message == "---"){
+            session.basicRemote.sendTextSafe("maybe")
+        }
+        logger.info { "He recibido en el cliente ${list.size}"}
     }
 }
 

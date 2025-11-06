@@ -5,6 +5,7 @@
 - Changed ElizaServerTest.kt
 - Changed ElizaServer.kt
 - Created index.html
+- Created broadcast test
 
 ## Technical Decisions
 [Explanation of technical choices made]
@@ -29,6 +30,7 @@
 - [Any modifications made to AI-generated code]
 - Modified /stats endpoint
 - Modified @OnMsg in /eliza endpoint
+- Modified SimpleClient in ElizaServerTest.kt
 
 ### Original Work
 - [Describe work done without AI assistance]

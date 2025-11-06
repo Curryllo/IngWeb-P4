@@ -6,6 +6,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.websocket.ClientEndpoint
 import jakarta.websocket.ContainerProvider
 import jakarta.websocket.OnMessage
+import jakarta.websocket.OnOpen
 import jakarta.websocket.Session
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -55,13 +56,56 @@ class ElizaServerTest {
         assertEquals("You don't seem very certain.", list[3])
         logger.info { "He recibido ${list.size}" }
     }
+
+    
+    @Test
+    fun broadcast() {
+        logger.info { "This is the broadcast test" }
+        var latch1 = CountDownLatch(3)
+        val list1 = mutableListOf<String>()
+
+        var latch2 = CountDownLatch(3)
+        val list2 = mutableListOf<String>()
+
+        val client1 = SimpleClient(list1, latch1)
+        client1.connect("ws://localhost:$port/eliza")
+        latch1.await()
+        assertEquals(3, list1.size)
+
+        val client2 = SimpleClient(list2, latch2)
+        client2.connect("ws://localhost:$port/eliza")
+        latch2.await()
+        assertEquals(3, list2.size)
+
+        latch1 = CountDownLatch(1)
+        latch2 = CountDownLatch(1)
+
+        client1.latch = latch1
+        client2.latch = latch2
+
+        client1.session.basicRemote.sendTextSafe("maybe")
+
+        latch1.await()
+        latch2.await()
+
+        assertEquals("You don't seem very certain.", list1[3])
+        assertEquals("You don't seem very certain.", list2[3])
+
+    }
+     
 }
 
 @ClientEndpoint
 class SimpleClient(
     private val list: MutableList<String>,
-    private val latch: CountDownLatch,
+    var latch: CountDownLatch,
 ) {
+    lateinit var session: Session
+
+    @OnOpen
+    fun onOpen(session: Session){
+        this.session = session
+    }
     @OnMessage
     fun onMessage(message: String) {
         logger.info { "Client received: $message" }
@@ -76,7 +120,6 @@ class ComplexClient(
     private val latch: CountDownLatch,
 ) {
     @OnMessage
-    @Suppress("UNUSED_PARAMETER") // Remove this line when you implement onMessage
     fun onMessage(
         message: String,
         session: Session,
@@ -84,14 +127,18 @@ class ComplexClient(
         logger.info { "Client received: $message" }
         list.add(message)
         latch.countDown()
-        // 5. COMPLETE if (expression) {
-        // 6. COMPLETE   sentence
-        // }
         if (message == "---") {
             session.basicRemote.sendTextSafe("maybe")
         }
         logger.info { "He recibido en el cliente ${list.size}" }
     }
+}
+
+@ClientEndpoint
+class SemiComplexClient(
+    private val list: MutableList<String>,
+    private val latch: CountDownLatch,
+) {
 }
 
 fun Any.connect(uri: String) {

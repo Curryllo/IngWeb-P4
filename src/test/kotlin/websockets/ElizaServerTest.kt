@@ -57,7 +57,6 @@ class ElizaServerTest {
         logger.info { "He recibido ${list.size}" }
     }
 
-    
     @Test
     fun broadcast() {
         logger.info { "This is the broadcast test" }
@@ -90,9 +89,7 @@ class ElizaServerTest {
 
         assertEquals("You don't seem very certain.", list1[3])
         assertEquals("You don't seem very certain.", list2[3])
-
     }
-     
 }
 
 @ClientEndpoint
@@ -103,9 +100,10 @@ class SimpleClient(
     lateinit var session: Session
 
     @OnOpen
-    fun onOpen(session: Session){
+    fun onOpen(session: Session) {
         this.session = session
     }
+
     @OnMessage
     fun onMessage(message: String) {
         logger.info { "Client received: $message" }
@@ -138,8 +136,7 @@ class ComplexClient(
 class SemiComplexClient(
     private val list: MutableList<String>,
     private val latch: CountDownLatch,
-) {
-}
+)
 
 fun Any.connect(uri: String) {
     ContainerProvider.getWebSocketContainer().connectToServer(this, URI(uri))

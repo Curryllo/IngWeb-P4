@@ -14,10 +14,7 @@ import jakarta.websocket.Session
 import jakarta.websocket.server.ServerEndpoint
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
 import org.springframework.stereotype.Component
-import org.springframework.web.socket.server.standard.ServerEndpointExporter
 import java.util.Locale
 import java.util.Scanner
 import java.util.concurrent.ConcurrentHashMap
@@ -29,12 +26,13 @@ class Application
 fun main(args: Array<String>) {
     runApplication<Application>(*args)
 }
-
+/*
 @Configuration(proxyBeanMethods = false)
 class WebSocketConfig {
     @Bean
     fun serverEndpoint() = ServerEndpointExporter()
 }
+*/
 
 private val logger = KotlinLogging.logger {}
 
